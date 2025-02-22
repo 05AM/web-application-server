@@ -7,10 +7,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import model.User;
 import util.IOUtils;
 import webserver.model.HttpRequest;
 
@@ -36,9 +38,8 @@ public class RequestHandler extends Thread {
             // 요청 정보 출력
             log.info(request.getRawRequest());
 
-            String path = request.getPath();
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = makeBody(path);
+            byte[] body = process(request);
 
             response200Header(dos, body.length);
             responseBody(dos, body);
@@ -48,12 +49,35 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private byte[] makeBody(String path) throws IOException {
+    private byte[] process(HttpRequest request) throws IOException {
         byte[] body = null;
 
-        switch (path) {
+        String requestPath = request.getRequestPath();
+        String httpMethod = request.getHttpMethod();
+
+        switch (requestPath) {
             case "/index.html":
-                body = IOUtils.readFileAsBytes(path);
+            case "/user/form.html":
+                body = IOUtils.readFileAsBytes(requestPath);
+                break;
+            case "/user/create":
+                if (httpMethod.equals("GET")) {
+                    Map<String, String> params = request.getParameters();
+
+                    String userId = params.get("userId");
+                    String password = params.get("password");
+                    String name = params.get("name");
+                    String email = params.get("email");
+
+                    User user = new User(userId, password, name, email);
+
+                } else if (httpMethod.equals("POST")) {
+                    System.out.println("[body]");
+                    System.out.println(request.getBody());
+                }
+
+                body = "User Create Success".getBytes();
+
                 break;
             default:
                 body = "Hello World".getBytes();
