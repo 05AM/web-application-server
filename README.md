@@ -15,12 +15,15 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
+http://localhost:8080/index.html
 * 1단계: Buffered Reader로 요청 정보 출력
   * Buffered Reader와 Writer를 사용하고 close하니 Inputstream도 닫혀서 socket이 닫히는 것 같다.
   * InputStream은 한번만 읽을 수 있다. 따라서 여러 번 읽고 싶으면 따로 저장해야 한다.
   * 그냥 문자열로 작업하는 것보다 클래스를 분리해서 파싱하여 사용하는 편이 편하다.
 
 ### 요구사항 2 - get 방식으로 회원가입
+http://localhost:8080/user/create?userId=javajigi&password=password&name=JaeSung&email=anytime0224@gmail.com
+http://localhost:8080/user/form.html
 * 
 
 ### 요구사항 3 - post 방식으로 회원가입
