@@ -30,7 +30,7 @@ http://localhost:8080/user/form.html
 * 따라서 요청 헤더의 `Content-Length`만큼 읽어야 한다.
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+* 브라우저가 리다이렉션을 인식하기 위해서는 `3xx` 상태코드와 함께 헤더의 `Location`에 이동할 url을 포함하여 응답한다.
 
 ### 요구사항 5 - cookie
 * 
