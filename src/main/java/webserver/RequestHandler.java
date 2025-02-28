@@ -39,17 +39,14 @@ public class RequestHandler extends Thread {
             log.info(request.getRawRequest());
 
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = process(request);
-
-            response200Header(dos, body.length);
-            responseBody(dos, body);
+            process(request, dos);
 
         } catch (IOException e) {
             log.error(e.getMessage());
         }
     }
 
-    private byte[] process(HttpRequest request) throws IOException {
+    private void process(HttpRequest request, DataOutputStream dos) throws IOException {
         byte[] body = null;
 
         String requestPath = request.getRequestPath();
@@ -59,6 +56,7 @@ public class RequestHandler extends Thread {
             case "/index.html":
             case "/user/form.html":
                 body = IOUtils.readFileAsBytes(requestPath);
+                response200Header(dos, body.length);
                 break;
             case "/user/create":
                 if (httpMethod.equals("GET") || httpMethod.equals("POST")) {
@@ -74,13 +72,15 @@ public class RequestHandler extends Thread {
                 }
 
                 body = "User Create Success".getBytes();
+                response302Header(dos, "/index.html");
                 break;
             default:
                 body = "Hello World".getBytes();
+                response200Header(dos, body.length);
                 break;
         }
 
-        return body;
+        responseBody(dos, body);
     }
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
@@ -88,6 +88,16 @@ public class RequestHandler extends Thread {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String redirectUrl) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 REDIRECT \r\n");
+            dos.writeBytes("Location: " + redirectUrl);
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
