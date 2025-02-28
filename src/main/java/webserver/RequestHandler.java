@@ -12,6 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import db.DataBase;
 import model.User;
 import util.IOUtils;
 import webserver.model.HttpRequest;
@@ -26,8 +27,7 @@ public class RequestHandler extends Thread {
     }
 
     public void run() {
-        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
-                connection.getPort());
+        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
 
         try (InputStream in = connection.getInputStream();
              OutputStream out = connection.getOutputStream();
@@ -61,7 +61,7 @@ public class RequestHandler extends Thread {
                 body = IOUtils.readFileAsBytes(requestPath);
                 break;
             case "/user/create":
-                if (httpMethod.equals("GET")) {
+                if (httpMethod.equals("GET") || httpMethod.equals("POST")) {
                     Map<String, String> params = request.getParameters();
 
                     String userId = params.get("userId");
@@ -70,14 +70,10 @@ public class RequestHandler extends Thread {
                     String email = params.get("email");
 
                     User user = new User(userId, password, name, email);
-
-                } else if (httpMethod.equals("POST")) {
-                    System.out.println("[body]");
-                    System.out.println(request.getBody());
+                    DataBase.addUser(user);
                 }
 
                 body = "User Create Success".getBytes();
-
                 break;
             default:
                 body = "Hello World".getBytes();
