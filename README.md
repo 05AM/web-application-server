@@ -23,11 +23,11 @@ http://localhost:8080/index.html
 
 ### 요구사항 2 - get 방식으로 회원가입
 http://localhost:8080/user/create?userId=javajigi&password=password&name=JaeSung&email=anytime0224@gmail.com
-http://localhost:8080/user/form.html
-* 
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+http://localhost:8080/user/form.html
+* body는 json이나 x-www-form-urlencoded 등의 형식으로 `/n`이 끝에 포함되지 않는 경우가 많기 때문에 eof 에러가 발생할 수 있다.
+* 따라서 요청 헤더의 `Content-Length`만큼 읽어야 한다.
 
 ### 요구사항 4 - redirect 방식으로 이동
 * 
