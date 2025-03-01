@@ -56,16 +56,20 @@ public class RequestHandler extends Thread {
         String httpMethod = request.getHttpMethod();
 
         switch (requestPath) {
+            // 정적 파일
             case "/index.html",
                  "/user/form.html",
                  "/user/login.html",
-                 "/user/login_failed.html" -> {
+                 "/user/login_failed.html",
+                 "/css/bootstrap.min.css",
+                 "/css/styles.css" -> {
                 body = IOUtils.readFileAsBytes(requestPath);
-                response200Header(dos, body.length);
+                response200Header(dos, getContentType(requestPath), body.length);
                 endOfHeader(dos);
                 responseBody(dos, body);
             }
 
+            // 그 외 요청
             case "/user/create" -> {
                 if (httpMethod.equals("GET") || httpMethod.equals("POST")) {
                     Map<String, String> params = request.getParameters();
@@ -116,7 +120,7 @@ public class RequestHandler extends Thread {
                     }
 
                     body = userList.toString().getBytes();
-                    response200Header(dos, body.length);
+                    response200Header(dos, "text/plain", body.length);
                     endOfHeader(dos);
                     responseBody(dos, body);
                 }
@@ -124,7 +128,7 @@ public class RequestHandler extends Thread {
 
             default -> {
                 body = "Hello World".getBytes();
-                response200Header(dos, body.length);
+                response200Header(dos, "text/html", body.length);
                 endOfHeader(dos);
                 responseBody(dos, body);
             }
@@ -133,10 +137,10 @@ public class RequestHandler extends Thread {
         dos.flush();
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, String contentType, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Type: " + contentType + "\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -149,6 +153,16 @@ public class RequestHandler extends Thread {
             dos.writeBytes("Location: " + redirectUrl + "\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
+        }
+    }
+
+    private String getContentType(String filePath) {
+        if (filePath.endsWith(".html")) {
+            return "text/html;charset=utf-8";
+        } else if (filePath.endsWith(".css")) {
+            return "text/css";
+        } else {
+            return "application/octet-stream";
         }
     }
 
@@ -169,6 +183,10 @@ public class RequestHandler extends Thread {
     }
 
     private void responseBody(DataOutputStream dos, byte[] body) {
+        if (body == null) {
+            return;
+        }
+
         try {
             dos.write(body, 0, body.length);
         } catch (IOException e) {
