@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class RequestHandler extends Thread {
             // 요청 역직렬화
             HttpRequest request = new HttpRequest(in);
 
+            log.info("[현재 요청 URL] {}", request.getRequestPath());
+
             // 요청 정보 출력
             log.info(request.getRawRequest());
 
@@ -53,17 +56,17 @@ public class RequestHandler extends Thread {
         String httpMethod = request.getHttpMethod();
 
         switch (requestPath) {
-            case "/index.html":
-            case "/user/form.html":
-            case "/user/login.html":
-            case "/user/login_failed.html":
+            case "/index.html",
+                 "/user/form.html",
+                 "/user/login.html",
+                 "/user/login_failed.html" -> {
                 body = IOUtils.readFileAsBytes(requestPath);
                 response200Header(dos, body.length);
                 endOfHeader(dos);
                 responseBody(dos, body);
-                break;
+            }
 
-            case "/user/create":
+            case "/user/create" -> {
                 if (httpMethod.equals("GET") || httpMethod.equals("POST")) {
                     Map<String, String> params = request.getParameters();
 
@@ -78,9 +81,9 @@ public class RequestHandler extends Thread {
 
                 response302Header(dos, "/index.html");
                 endOfHeader(dos);
-                break;
+            }
 
-            case "/user/login":
+            case "/user/login" -> {
                 Map<String, String> params = request.getParameters();
 
                 String userId = params.get("userId");
@@ -96,14 +99,35 @@ public class RequestHandler extends Thread {
                     setCookie(dos, "logined=true");
                     endOfHeader(dos);
                 }
-                break;
+            }
 
-            default:
+            case "/user/list" -> {
+                Map<String, String> cookies = request.getCookies();
+                String logined = cookies.get("logined");
+
+                if (logined == null || !logined.equals("true")) {
+                    response302Header(dos, "/user/login.html");
+                } else {
+                    Collection<User> users = DataBase.findAll();
+
+                    StringBuilder userList = new StringBuilder();
+                    for (User user : users) {
+                        userList.append(user.getUserId()).append("\n");
+                    }
+
+                    body = userList.toString().getBytes();
+                    response200Header(dos, body.length);
+                    endOfHeader(dos);
+                    responseBody(dos, body);
+                }
+            }
+
+            default -> {
                 body = "Hello World".getBytes();
                 response200Header(dos, body.length);
                 endOfHeader(dos);
                 responseBody(dos, body);
-                break;
+            }
         }
 
         dos.flush();

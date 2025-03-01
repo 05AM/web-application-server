@@ -15,6 +15,7 @@ public class HttpRequest {
     private String httpMethod;
     private Map<String, String> parameters = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> cookies = new HashMap<>();
     private String body;
     private StringBuilder rawRequestBuilder = new StringBuilder();
 
@@ -34,6 +35,9 @@ public class HttpRequest {
             rawRequestBuilder.append(line).append("\n");
             parseHeader(line);
         }
+
+        // Cookie
+        parseCookie(headers.get("Cookie"));
 
         // Body
         if ("POST".equals(httpMethod)) {
@@ -57,6 +61,15 @@ public class HttpRequest {
         HttpRequestUtils.Pair header = HttpRequestUtils.parseHeader(headerLine);
         if (header != null) {
             headers.put(header.getKey(), header.getValue());
+        }
+    }
+
+    private void parseCookie(String cookieHeader) {
+        if (cookieHeader != null && !cookieHeader.isEmpty()) {
+            for (String cookie : cookieHeader.split("; ")) {
+                String[] keyValue = cookie.split("=", 2);
+                this.cookies.put(keyValue[0], keyValue[1]);
+            }
         }
     }
 
@@ -87,6 +100,10 @@ public class HttpRequest {
 
     public Map<String, String> getHeaders() {
         return headers;
+    }
+
+    public Map<String, String> getCookies() {
+        return cookies;
     }
 
     public String getBody() {
