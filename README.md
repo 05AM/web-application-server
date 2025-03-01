@@ -46,6 +46,12 @@ http://localhost:8080/user/list
 
 ### 요구사항 7 - stylesheet 적용
 
+* html에 link 태그로 css나 js같이 추가 파일이 포함되어 있으면 브라우저에서 추가로 해당 파일을 요청한다.
+* 헤더에 해당 파일의 확장자에 맞는 content type으로 요청이 오는데, 맞는 파일과 응답 헤더의 `Content-Type`을 해당 타입으로 명시해주어야 브라우저가 제대로 인식 가능하다.
+
+``` html
+<link href="css/bootstrap.min.css" rel="stylesheet">
+```
 
 ### heroku 서버에 배포 후
 * 
