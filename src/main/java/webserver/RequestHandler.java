@@ -55,9 +55,14 @@ public class RequestHandler extends Thread {
         switch (requestPath) {
             case "/index.html":
             case "/user/form.html":
+            case "/user/login.html":
+            case "/user/login_failed.html":
                 body = IOUtils.readFileAsBytes(requestPath);
                 response200Header(dos, body.length);
+                endOfHeader(dos);
+                responseBody(dos, body);
                 break;
+
             case "/user/create":
                 if (httpMethod.equals("GET") || httpMethod.equals("POST")) {
                     Map<String, String> params = request.getParameters();
@@ -71,16 +76,37 @@ public class RequestHandler extends Thread {
                     DataBase.addUser(user);
                 }
 
-                body = "User Create Success".getBytes();
                 response302Header(dos, "/index.html");
+                endOfHeader(dos);
                 break;
+
+            case "/user/login":
+                Map<String, String> params = request.getParameters();
+
+                String userId = params.get("userId");
+                String password = params.get("password");
+
+                User user = DataBase.findUserById(userId);
+
+                if (user == null || !user.getPassword().equals(password)) {
+                    response302Header(dos, "/user/login_failed.html");
+                    endOfHeader(dos);
+                } else {
+                    response302Header(dos, "/index.html");
+                    setCookie(dos, "logined=true");
+                    endOfHeader(dos);
+                }
+                break;
+
             default:
                 body = "Hello World".getBytes();
                 response200Header(dos, body.length);
+                endOfHeader(dos);
+                responseBody(dos, body);
                 break;
         }
 
-        responseBody(dos, body);
+        dos.flush();
     }
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
@@ -88,7 +114,6 @@ public class RequestHandler extends Thread {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -96,8 +121,23 @@ public class RequestHandler extends Thread {
 
     private void response302Header(DataOutputStream dos, String redirectUrl) {
         try {
-            dos.writeBytes("HTTP/1.1 302 REDIRECT \r\n");
-            dos.writeBytes("Location: " + redirectUrl);
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            dos.writeBytes("Location: " + redirectUrl + "\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void setCookie(DataOutputStream dos, String content) {
+        try {
+            dos.writeBytes("Set-Cookie: " + content + "\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void endOfHeader(DataOutputStream dos) {
+        try {
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -107,7 +147,6 @@ public class RequestHandler extends Thread {
     private void responseBody(DataOutputStream dos, byte[] body) {
         try {
             dos.write(body, 0, body.length);
-            dos.flush();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
