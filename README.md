@@ -33,12 +33,19 @@ http://localhost:8080/user/form.html
 * 브라우저가 리다이렉션을 인식하기 위해서는 `3xx` 상태코드와 함께 헤더의 `Location`에 이동할 url을 포함하여 응답한다.
 
 ### 요구사항 5 - cookie
+* Cookie
+  * 설정: `Set-Cookie: key1=value1`
+  * 확인: `Cookie: key1=value1; key2=value2; ...`
 * 개발자 도구
   * 쿠키 확인: `개발자 도구` - `네트워크` - `쿠키`
   * 쿠키 삭제: `개발자 도구` - `응용 프로그램` - `쿠키`
 
-### 요구사항 6 - stylesheet 적용
-* 
+### 요구사항 6 - 사용자 목록 출력
+http://localhost:8080/user/list
+* 그냥 문자열만 반환하면 html에서는 줄바꿈이 일어나지 않는다.
+
+### 요구사항 7 - stylesheet 적용
+
 
 ### heroku 서버에 배포 후
 * 
